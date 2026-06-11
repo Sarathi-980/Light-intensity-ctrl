@@ -1,0 +1,6 @@
+#ifndef BOARD_CONFIG_H
+#define BOARD_CONFIG_H
+
+#define BOARD_CPU_FREQUENCY	72000000   // 72 MHz
+
+#endif
