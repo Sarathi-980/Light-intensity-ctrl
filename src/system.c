@@ -1,6 +1,8 @@
 #include "system.h"
 #include "system_exceptions.h"
 
+uint32_t system_frequency;
+
 /*  FLASH_ACR is used to enable/disable cpu prefetch, half cycle access
     and control CPU flash access time according to CPU frequency. 
     when boosting CPU frequency we should match the instruction fetch,
@@ -29,6 +31,8 @@ static system_result_t rcc_pll_multiply(pll_clk_mul_t multiple, apb1_clk_ctrl_t 
 
     reg_value &= ~(RCC_CFG_PLL_MUL_MASK | RCC_CFG_PPRE1_MASK);
     reg_value |= (multiple << RCC_CFG_PLL_MUL_POS) | (apb1_clk << RCC_CFG_PPRE1_POS);
+    system_frequency = multiple * EXTERNAL_CRYSTAL_FREQ;
+ 
     RCC_REGISTERS_ADDR->RCC_CFGR = reg_value;
     return RESULT_SUCCESS;
 }

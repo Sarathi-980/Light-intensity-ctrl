@@ -148,5 +148,111 @@ typedef struct
 #define GPIOF_BASE              (0x40011C00UL)
 #define GPIOG_BASE              (0x40012000UL) 
 
+#define TIMER2_BASE             (0x40000000UL)
 
+typedef struct
+{
+    volatile uint32_t TIMx_CR1;
+    volatile uint32_t TIMx_CR2;
+    volatile uint32_t TIMx_SMCR;
+    volatile uint32_t TIMx_DIER;
+    volatile uint32_t TIMx_SR;
+    volatile uint32_t TIMx_EGR;
+    volatile uint32_t TIMx_CCMR1;
+    volatile uint32_t TIMx_CCMR2;
+    volatile uint32_t TIMx_CCER;
+    volatile uint32_t TIMx_CNT;
+    volatile uint32_t TIMx_PSC;
+    volatile uint32_t TIMx_ARR;
+    volatile uint32_t TIMx_CCR1;
+    volatile uint32_t TIMx_CCR2;
+    volatile uint32_t TIMx_CCR3;
+    volatile uint32_t TIMx_CCR4;
+    volatile uint32_t TIMx_DCR;
+    volatile uint32_t TIMx_DMAR;
+}   TIMx_registers_t;
+
+#define TIMER2_REGISTERS        ((TIMx_registers_t *) TIMER2_BASE)
+
+// Control register 1
+#define TIMx_CR1_CKD_MASK           (0x3 << 8)      // Clock division value between timer clock and sampling clock
+#define TIMx_CR1_APRE_MASK          (1UL << 7UL)    // Auto-reload preload enable
+#define TIMx_CR1_ARPE_MASK          (1UL << 7UL)    // Auto-reload preload enable
+#define TIMx_CR1_CMS_MASK           (3UL << 5UL)    // Center Aligned Mode value
+#define TIMx_CR1_DIR_MASK           (1UL << 4UL)    // Direction of counter
+#define TIMx_CR1_OPM_MASK           (1UL << 3UL)    // One pulse mode
+#define TIMx_CR1_URS_MASK           (1UL << 2UL)    // Update request source
+#define TIMx_CR1_UDIS_MASK          (1UL << 1UL)    // Update disable
+#define TIMx_CR1_CEN_MASK           (1UL << 0UL)    // Counter enable
+
+// Timer Capture Compare Mode register 1, address offset : 0x18
+// This channel can be used in input (capture mode) and in output (compare mode).
+
+// Output compare mode 
+
+#define TIMx_CCMR1_OUT_CC1S_POS     0U
+#define TIMx_CCMR1_OUT_OC1FE_POS    2U
+#define TIMx_CCMR1_OUT_OC1PE_POS    3U
+#define TIMx_CCMR1_OUT_OC1M_POS     4U
+#define TIMx_CCMR1_OUT_OC1CE_POS    7U
+
+#define TIMx_CCMR1_OUT_CC2S_POS     8U
+#define TIMx_CCMR1_OUT_OC2FE_POS    10U
+#define TIMx_CCMR1_OUT_OC2PE_POS    11U
+#define TIMx_CCMR1_OUT_OC2M_POS     12U
+#define TIMx_CCMR1_OUT_OC2CE_POS    15U
+
+#define TIMx_CCMR1_OUT_CC1S_MASK    (3U << TIMx_CCMR1_OUT_CC1S_POS)         // Output compare 1 selection
+#define TIMx_CCMR1_OUT_OC1FE_MASK   (1U << TIMx_CCMR1_OUT_OC1FE_POS)        // Output compare 1 fast enable
+#define TIMx_CCMR1_OUT_OC1PE_MASK   (1U << TIMx_CCMR1_OUT_OC1PE_POS)        // Output compare 1 preload enable
+#define TIMx_CCMR1_OUT_OC1M_MASK    (7U << TIMx_CCMR1_OUT_OC1M_POS)         // Output compare 1 mode
+#define TIMx_CCMR1_OUT_OC1CE_MASK   (1U << TIMx_CCMR1_OUT_OC1CE_POS)        // Output compare 1 clear enable
+
+#define TIMx_CCMR1_OUT_CC2S_MASK    (3U << TIMx_CCMR1_OUT_CC2S_POS)         // Output compare 2 selection
+#define TIMx_CCMR1_OUT_OC2FE_MASK   (1U << TIMx_CCMR1_OUT_OC2FE_POS)        // Output compare 2 fast enable
+#define TIMx_CCMR1_OUT_OC2PE_MASK   (1U << TIMx_CCMR1_OUT_OC2PE_POS)        // Output compare 2 preload enable
+#define TIMx_CCMR1_OUT_OC2M_MASK    (7U << TIMx_CCMR1_OUT_OC2M_POS)         // Output compare 2 mode
+#define TIMx_CCMR1_OUT_OC2CE_MASK   (1U << TIMx_CCMR1_OUT_OC2CE_POS)        // Output compare 2 clear enable
+      
+
+// Input capture mode 
+#define TIMx_CCMR1_INP_CC1S_POS      0U
+#define TIMx_CCMR1_INP_IC1PSC_POS    2U
+#define TIMx_CCMR1_INP_IC1F_POS      4U
+
+#define TIMx_CCMR1_INP_CC2S_POS      8U
+#define TIMx_CCMR1_INP_IC2PSC_POS    10U
+#define TIMx_CCMR1_INP_IC2F_POS      12U
+
+#define TIMx_CCMR1_INP_CC1S_MASK     (3U   << TIMx_CCMR1_INP_CC1S_POS)      // Input capture compare 1 selection 
+#define TIMx_CCMR1_INP_IC1PSC_MASK   (3U   << TIMx_CCMR1_INP_IC1PSC_POS)    // Input capture 1 prescaler
+#define TIMx_CCMR1_INP_IC1F_MASK     (0xFU << TIMx_CCMR1_INP_IC1F_POS)      // Input capture 1 filter
+
+#define TIMx_CCMR1_INP_CC2S_MASK     (3U   << TIMx_CCMR1_INP_CC2S_POS)      // Input Capture compare 2 selectioin
+#define TIMx_CCMR1_INP_IC2PSC_MASK   (3U   << TIMx_CCMR1_INP_IC2PSC_POS)    // Input capture 2 prescaler
+#define TIMx_CCMR1_INP_IC2F_MASK     (0xFU << TIMx_CCMR1_INP_IC2F_POS)      // Input capture 2 filter
+
+// Timer CCER register
+#define TIMx_CCER_CC1E_MASK     (1U << 0U)
+#define TIMx_CCER_CC1P_MASK     (1U << 1U)
+
+#define TIMx_CCER_CC2E_MASK     (1U << 4U)
+#define TIMx_CCER_CC2P_MASK     (1U << 5U)
+
+#define TIMx_CCER_CC3E_MASK     (1U << 8U)
+#define TIMx_CCER_CC3P_MASK     (1U << 9U)
+
+#define TIMx_CCER_CC4E_MASK     (1U << 12U)
+#define TIMx_CCER_CC4P_MASK     (1U << 13U)
+
+// TIMx_EGR register
+
+#define TIMx_EGR_UG_MASK       (1U << 0U)
+#define TIMx_EGR_CC1G_MASK     (1U << 1U)
+#define TIMx_EGR_CC2G_MASK     (1U << 2U)
+#define TIMx_EGR_CC3G_MASK     (1U << 3U)
+#define TIMx_EGR_CC4G_MASK     (1U << 4U)
+#define TIMx_EGR_COMG_MASK     (1U << 5U)
+#define TIMx_EGR_TG_MASK       (1U << 6U)
+#define TIMx_EGR_BG_MASK       (1U << 7U)
 #endif

@@ -6,8 +6,10 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#define CPU_FREQUENCY				BOARD_CPU_FREQUENCY	// CPU frequency is 72MHz
+#define CPU_FREQUENCY				BOARD_CPU_FREQUENCY
 #define SYSTICK_HZ					(100)		// 100 for systick interupt per 10 milli-second
+
+#define ONE_MHZ_FREQUENCY			(1000000U)
 
 #define MS_TO_TICKS(ms)				(((ms) + 5) / (1000/100))			
 

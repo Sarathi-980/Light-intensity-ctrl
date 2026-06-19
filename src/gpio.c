@@ -7,7 +7,7 @@
 ===================================================================================*/
 system_result_t gpio_configure(gpio_port_t port, gpio_num_t pin, port_config_t pin_config, gpio_mode_t mode) 
 {
-    if (pin > 15) {
+    if (pin > GPIO_PIN_15) {
         return RESULT_INVALID;
     }
 
