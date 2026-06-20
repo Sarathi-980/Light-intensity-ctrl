@@ -81,6 +81,22 @@ typedef enum {
     GPIO_PIN_15
 }   gpio_num_t;
 
-system_result_t gpio_configure(gpio_port_t port, gpio_num_t pin, port_config_t pin_config, gpio_mode_t mode);
+typedef enum {
+    TIMER_CHANNEL_0,
+    TIMER_CHANNEL_1,
+    TIMER_CHANNEL_2,
+    TIMER_CHANNEL_3
+}   timer_channel_t;
+
+typedef struct 
+{
+    gpio_port_t port;
+    gpio_num_t pin;
+    port_config_t pin_config;
+    gpio_mode_t mode
+}  gpio_config_req_t;
+
+
+system_result_t gpio_configure(gpio_config_req_t cfg_req);
 void led_indicate_state(system_result_t state);
 #endif

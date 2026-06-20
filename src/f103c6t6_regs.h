@@ -152,27 +152,64 @@ typedef struct
 
 typedef struct
 {
+    // Timer control registers
     volatile uint32_t TIMx_CR1;
     volatile uint32_t TIMx_CR2;
+    // Slave mode control register
     volatile uint32_t TIMx_SMCR;
+    // DMA / interrupt enable register
     volatile uint32_t TIMx_DIER;
+    // Status register
     volatile uint32_t TIMx_SR;
+    // Event generation register
     volatile uint32_t TIMx_EGR;
+    // Capture / Compare mode register
     volatile uint32_t TIMx_CCMR1;
     volatile uint32_t TIMx_CCMR2;
+    // Capture / Compare enable register
     volatile uint32_t TIMx_CCER;
+    // Counter value [15 : 0]
     volatile uint32_t TIMx_CNT;
+    // Prescaler value. The counter clock frequency CK_CNT is equal to timer_input_clock / (PSC + 1) 
     volatile uint32_t TIMx_PSC;
+    // Auto reload register holds prescaler value [15 : 0], will be loaded into actual auto-reload register
     volatile uint32_t TIMx_ARR;
+    // Capture/Compare registers, value[15 : 0] based configured as capture mode or compare mode.
     volatile uint32_t TIMx_CCR1;
     volatile uint32_t TIMx_CCR2;
     volatile uint32_t TIMx_CCR3;
     volatile uint32_t TIMx_CCR4;
+    /* TIMx_DCR : DMA control register. It contains DBL - DMA burst length and
+       DBA - DMA base address. If DBL is 5 transfers and DBA is TIMx_CR1 then
+       transfer done from/to 5 registers from the TIMx_CR1 address.*/    
     volatile uint32_t TIMx_DCR;
+    /*  TIMx_DMAR: Timer x DMA address for full transfer. 
+        offset: 0x4C, DMAB[15 : 0] DMA register for burst accesses.
+        A read or write operation to this register accesses the 
+        register located at the address (TIMx_CR1 address) + (DBA + DMA index) * 4
+        CR1 -> address of control register 1.
+        DBA -> address of DMA base address.
+        DMA index -> automatically controlled by the DMA transfer.
+    */
     volatile uint32_t TIMx_DMAR;
 }   TIMx_registers_t;
 
-#define TIMER2_REGISTERS        ((TIMx_registers_t *) TIMER2_BASE)
+#define TIMER1_BASE_ADDRESS         (0x40012C00U)
+#define TIMER2_BASE_ADDRESS         (0x40000000U)
+#define TIMER3_BASE_ADDRESS         (0x40000400U)
+#define TIMER4_BASE_ADDRESS         (0x40000800U)
+#define TIMER5_BASE_ADDRESS         (0x40000C00U)
+#define TIMER6_BASE_ADDRESS         (0x40001000U)
+#define TIMER7_BASE_ADDRESS         (0x40001400U)
+#define TIMER8_BASE_ADDRESS         (0x40013400U)
+#define TIMER9_BASE_ADDRESS         (0x40014C00U)
+#define TIMER10_BASE_ADDRESS        (0x40015000U)
+#define TIMER11_BASE_ADDRESS        (0x40015400U)
+#define TIMER12_BASE_ADDRESS        (0x40001800U)
+#define TIMER13_BASE_ADDRESS        (0x40001C00U)
+#define TIMER14_BASE_ADDRESS        (0x40002000U)
+
+#define GENERAL_TIMER_REGISTERS(base)       ((TIMx_registers_t *) (base))
 
 // Control register 1
 #define TIMx_CR1_CKD_MASK           (0x3 << 8)      // Clock division value between timer clock and sampling clock
@@ -190,19 +227,19 @@ typedef struct
 
 // Output compare mode 
 
-#define TIMx_CCMR1_OUT_CC1S_POS     0U
-#define TIMx_CCMR1_OUT_OC1FE_POS    2U
-#define TIMx_CCMR1_OUT_OC1PE_POS    3U
-#define TIMx_CCMR1_OUT_OC1M_POS     4U
-#define TIMx_CCMR1_OUT_OC1CE_POS    7U
+#define TIMx_CCMR1_CC1S_POS         (0U)
+#define TIMx_CCMR1_OUT_OC1FE_POS    (2U)
+#define TIMx_CCMR1_OUT_OC1PE_POS    (3U)
+#define TIMx_CCMR1_OUT_OC1M_POS     (4U)
+#define TIMx_CCMR1_OUT_OC1CE_POS    (7U)
 
-#define TIMx_CCMR1_OUT_CC2S_POS     8U
-#define TIMx_CCMR1_OUT_OC2FE_POS    10U
-#define TIMx_CCMR1_OUT_OC2PE_POS    11U
-#define TIMx_CCMR1_OUT_OC2M_POS     12U
-#define TIMx_CCMR1_OUT_OC2CE_POS    15U
+#define TIMx_CCMR1_OUT_CC2S_POS     (8U)
+#define TIMx_CCMR1_OUT_OC2FE_POS    (10U)
+#define TIMx_CCMR1_OUT_OC2PE_POS    (11U)
+#define TIMx_CCMR1_OUT_OC2M_POS     (12U)
+#define TIMx_CCMR1_OUT_OC2CE_POS    (15U)
 
-#define TIMx_CCMR1_OUT_CC1S_MASK    (3U << TIMx_CCMR1_OUT_CC1S_POS)         // Output compare 1 selection
+#define TIMx_CCMR1_CC1S_MASK        (3U << TIMx_CCMR1_CC1S_POS)             // channel 1 direction selection
 #define TIMx_CCMR1_OUT_OC1FE_MASK   (1U << TIMx_CCMR1_OUT_OC1FE_POS)        // Output compare 1 fast enable
 #define TIMx_CCMR1_OUT_OC1PE_MASK   (1U << TIMx_CCMR1_OUT_OC1PE_POS)        // Output compare 1 preload enable
 #define TIMx_CCMR1_OUT_OC1M_MASK    (7U << TIMx_CCMR1_OUT_OC1M_POS)         // Output compare 1 mode
@@ -215,16 +252,14 @@ typedef struct
 #define TIMx_CCMR1_OUT_OC2CE_MASK   (1U << TIMx_CCMR1_OUT_OC2CE_POS)        // Output compare 2 clear enable
       
 
-// Input capture mode 
-#define TIMx_CCMR1_INP_CC1S_POS      0U
-#define TIMx_CCMR1_INP_IC1PSC_POS    2U
-#define TIMx_CCMR1_INP_IC1F_POS      4U
+// Input capture mode  
+#define TIMx_CCMR1_INP_IC1PSC_POS    (2U)
+#define TIMx_CCMR1_INP_IC1F_POS      (4U)
 
-#define TIMx_CCMR1_INP_CC2S_POS      8U
-#define TIMx_CCMR1_INP_IC2PSC_POS    10U
-#define TIMx_CCMR1_INP_IC2F_POS      12U
+#define TIMx_CCMR1_INP_CC2S_POS      (8U)
+#define TIMx_CCMR1_INP_IC2PSC_POS    (10U)
+#define TIMx_CCMR1_INP_IC2F_POS      (12U)
 
-#define TIMx_CCMR1_INP_CC1S_MASK     (3U   << TIMx_CCMR1_INP_CC1S_POS)      // Input capture compare 1 selection 
 #define TIMx_CCMR1_INP_IC1PSC_MASK   (3U   << TIMx_CCMR1_INP_IC1PSC_POS)    // Input capture 1 prescaler
 #define TIMx_CCMR1_INP_IC1F_MASK     (0xFU << TIMx_CCMR1_INP_IC1F_POS)      // Input capture 1 filter
 
@@ -233,26 +268,62 @@ typedef struct
 #define TIMx_CCMR1_INP_IC2F_MASK     (0xFU << TIMx_CCMR1_INP_IC2F_POS)      // Input capture 2 filter
 
 // Timer CCER register
-#define TIMx_CCER_CC1E_MASK     (1U << 0U)
-#define TIMx_CCER_CC1P_MASK     (1U << 1U)
+#define TIMx_CCER_CC1E_MASK         (1U << 0U)
+#define TIMx_CCER_CC1P_MASK         (1U << 1U)
 
-#define TIMx_CCER_CC2E_MASK     (1U << 4U)
-#define TIMx_CCER_CC2P_MASK     (1U << 5U)
+#define TIMx_CCER_CC2E_MASK         (1U << 4U)
+#define TIMx_CCER_CC2P_MASK         (1U << 5U)
 
-#define TIMx_CCER_CC3E_MASK     (1U << 8U)
-#define TIMx_CCER_CC3P_MASK     (1U << 9U)
+#define TIMx_CCER_CC3E_MASK         (1U << 8U)
+#define TIMx_CCER_CC3P_MASK         (1U << 9U)
 
-#define TIMx_CCER_CC4E_MASK     (1U << 12U)
-#define TIMx_CCER_CC4P_MASK     (1U << 13U)
+#define TIMx_CCER_CC4E_MASK         (1U << 12U)
+#define TIMx_CCER_CC4P_MASK         (1U << 13U)
 
 // TIMx_EGR register
 
-#define TIMx_EGR_UG_MASK       (1U << 0U)
-#define TIMx_EGR_CC1G_MASK     (1U << 1U)
-#define TIMx_EGR_CC2G_MASK     (1U << 2U)
-#define TIMx_EGR_CC3G_MASK     (1U << 3U)
-#define TIMx_EGR_CC4G_MASK     (1U << 4U)
-#define TIMx_EGR_COMG_MASK     (1U << 5U)
-#define TIMx_EGR_TG_MASK       (1U << 6U)
-#define TIMx_EGR_BG_MASK       (1U << 7U)
+#define TIMx_EGR_UG_MASK            (1U << 0U)
+#define TIMx_EGR_CC1G_MASK          (1U << 1U)
+#define TIMx_EGR_CC2G_MASK          (1U << 2U)
+#define TIMx_EGR_CC3G_MASK          (1U << 3U)
+#define TIMx_EGR_CC4G_MASK          (1U << 4U)
+#define TIMx_EGR_COMG_MASK          (1U << 5U)
+#define TIMx_EGR_TG_MASK            (1U << 6U)
+#define TIMx_EGR_BG_MASK            (1U << 7U)
+ 
+
+// Timer control register
+#define TIMx_DCR_DBA_MASK           (0x1FU << 0U)       // Timer x Base address
+#define TIMx_DCR_DBL_MASK           (0x1FU << 8U)       // DMA burst length
+
+#define TIMx_DCR_DBA_VAL(value)     (((uint32_t) (value) << 0U) & TIMx_DCR_DBA_MASK)
+#define TIMx_DCR_DBL_VAL(value)     (((uint32_t) (value) << 8U) & TIMx_DCR_DBL_MASK)
+
+// 5 bit vector number defines the number of DMA transfers
+#define TIMx_DCR_DBL_TRANSFERS(n)   TIMx_DCR_DBL_VAL((n) - 1U)
+
+// 5 bit vector defines the base-address for DMA transfers
+typedef enum {
+    TIMx_DMA_BASE_CR1   = 0U,
+    TIMx_DMA_BASE_CR2   = 1U,
+    TIMx_DMA_BASE_SMCR  = 2U,
+    TIMx_DMA_BASE_DIER  = 3U,
+    TIMx_DMA_BASE_SR    = 4U,
+    TIMx_DMA_BASE_EGR   = 5U,
+    TIMx_DMA_BASE_CCMR1 = 6U,
+    TIMx_DMA_BASE_CCMR2 = 7U,
+    TIMx_DMA_BASE_CCER  = 8U,
+    TIMx_DMA_BASE_CNT   = 9U,
+    TIMx_DMA_BASE_PSC   = 10U,
+    TIMx_DMA_BASE_ARR   = 11U,
+    TIMx_DMA_BASE_RCR   = 12U,
+    TIMx_DMA_BASE_CCR1  = 13U,
+    TIMx_DMA_BASE_CCR2  = 14U,
+    TIMx_DMA_BASE_CCR3  = 15U,
+    TIMx_DMA_BASE_CCR4  = 16U,
+    TIMx_DMA_BASE_BDTR  = 17U,
+    TIMx_DMA_BASE_DCR   = 18U,
+    TIMx_DMA_BASE_DMAR  = 19U
+} TIMx_DCR_dma_base_addr_t;
+
 #endif

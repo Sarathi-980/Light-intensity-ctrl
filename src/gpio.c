@@ -5,14 +5,14 @@
 @param enable - It is a bitmask indicating which GPIO ports should be enabled.
 @return     RESULT_SUCCESS  -   Ports are initialized successfully.
 ===================================================================================*/
-system_result_t gpio_configure(gpio_port_t port, gpio_num_t pin, port_config_t pin_config, gpio_mode_t mode) 
+system_result_t gpio_configure(gpio_config_req_t cfg_req) 
 {
-    if (pin > GPIO_PIN_15) {
+    if (cfg_req.pin > GPIO_PIN_15) {
         return RESULT_INVALID;
     }
 
     uint32_t port_reg;
-    switch (port)
+    switch (cfg_req.port)
     {
         case GPIO_PORT_A:
         {
@@ -35,22 +35,28 @@ system_result_t gpio_configure(gpio_port_t port, gpio_num_t pin, port_config_t p
   
     // Low pins config register offset is 0x0, High pins config register offset is 0x4
     volatile uint32_t *config_reg; 
-    if (pin < GPIO_CFG_LOW_REG_MAX_PIN) {
+    if (cfg_req.pin < GPIO_CFG_LOW_REG_MAX_PIN) {
         config_reg = &GPIOx_config_regs(port_reg)->CRL; 
     }
     else {
         config_reg = &GPIOx_config_regs(port_reg)->CRH;
-        pin -= GPIO_CFG_LOW_REG_MAX_PIN;
+        cfg_req.pin -= GPIO_CFG_LOW_REG_MAX_PIN;
     }
 
-    *config_reg = (*config_reg & ~GPIOx_PIN_CFG_MASK(pin)) | (GPIOx_PIN_CFG_SET(((pin_config << 2) | mode), pin));
+    *config_reg = (*config_reg & ~GPIOx_PIN_CFG_MASK(cfg_req.pin)) | (GPIOx_PIN_CFG_SET(((cfg_req.pin_config << 2) | cfg_req.mode), cfg_req.pin));
     return RESULT_SUCCESS;
 }
 
 void led_indicate_state(system_result_t state) {
     static bool led_configured = false;
     if (!led_configured) {
-        gpio_configure(GPIO_PORT_C, GPIO_PIN_13, GPIO_OUTPUT_PUSH_PULL, GPIO_OUTPUT_2MHz);
+        gpio_config_req_t configs = {
+            .port = GPIO_PORT_C,
+            .pin = GPIO_PIN_13,
+            .mode = GPIO_OUTPUT_2MHz,
+            .pin_config = GPIO_OUTPUT_PUSH_PULL
+        };
+        gpio_configure(configs);
         led_configured = true;
     }
     if (state != RESULT_SUCCESS) {
