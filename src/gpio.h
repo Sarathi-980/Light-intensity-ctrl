@@ -81,13 +81,6 @@ typedef enum {
     GPIO_PIN_15
 }   gpio_num_t;
 
-typedef enum {
-    TIMER_CHANNEL_0,
-    TIMER_CHANNEL_1,
-    TIMER_CHANNEL_2,
-    TIMER_CHANNEL_3
-}   timer_channel_t;
-
 typedef struct 
 {
     gpio_port_t port;

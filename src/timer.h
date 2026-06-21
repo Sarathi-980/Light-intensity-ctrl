@@ -25,9 +25,16 @@ typedef enum {
     TIMER_TIM12,
     TIMER_TIM13,
     TIMER_TIM14,
-
     TIMER_COUNT
 } timer_id_t;
+
+typedef enum {
+    TIMER_CHANNEL_1 = 0,
+    TIMER_CHANNEL_2,
+    TIMER_CHANNEL_3,
+    TIMER_CHANNEL_4,
+    TIMER_CHANNEL_COUNT
+} timer_channel_t;
 
 // Comparizon between TIMx_CCR1 and the TIMx_CNT
 typedef enum {
@@ -42,11 +49,8 @@ typedef enum {
 }   TIMERx_CCMR1_OC1M_t;
 
 typedef enum {
-    TIMER_CC1_CONFIG_OUTPUT,
-    TIMER_CC1_CONFIG_IC1_MAP_TI1,
-    TIMER_CC1_CONFIG_IC1_MAP_TI2,
-    TIMER_CC1_CONFIG_IC1_MAP_TRC
-}   TIMx_CC1S_t;
+    TIMER_CCx_CONFIG_OUTPUT,
+}   TIMx_CCxS_t;
 
 typedef enum {
     TIMx_IC1PSC_NO_PRESCALER = 0,       // no prescaler, capture at each edge
@@ -92,6 +96,6 @@ typedef enum {
     CAPTURE_INP_ENABLE  = 1U,
     COMPARE_OUT_DISABLE    =   0U,
     COMPARE_OUT_ENABLE     =   1U,
-}   TIMx_CCPE_t;
+}   TIMx_CCER_t;
 
 #endif
