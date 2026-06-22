@@ -17,6 +17,7 @@ typedef enum {
 	RESULT_SUCCESS,
 	RESULT_FAIL,
 	RESULT_INVALID,
+	RESULT_NOT_ALLOWED,
 	RESULT_TIMEOUT
 } system_result_t;
 
@@ -165,6 +166,13 @@ typedef enum {
 	INVALID_CLOCK
 }	system_clk_t;
 
+typedef enum {
+	ADC_SYSCLK_DIV_2,
+	ADC_SYSCLK_DIV_4,
+	ADC_SYSCLK_DIV_6,
+	ADC_SYSCLK_DIV_8
+}	adc_pre_t;	// RCC CFG register adc prescaler config
+
 /********************************************************************************
  * @brief Initializes the system clock configuration.
  * @note  Initially, the hardware will use an 8MHz Internal oscillator (HSI) for easy startup.
@@ -225,5 +233,7 @@ system_result_t APB1_enable_clock(apb1_enable_t enable);
  * 			RESULT_INVALID : If enable configurations is invalid. this will returned if any one bit position is invalid.
  */
 system_result_t APB2_enable_clock(apb2_enable_t enable);
+
+system_result_t ADC_config_clock();
 
 #endif

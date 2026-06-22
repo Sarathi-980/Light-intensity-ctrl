@@ -47,30 +47,4 @@ system_result_t gpio_configure(gpio_config_req_t cfg_req)
     return RESULT_SUCCESS;
 }
 
-void led_indicate_state(system_result_t state) {
-    static bool led_configured = false;
-    if (!led_configured) {
-        gpio_config_req_t configs = {
-            .port = GPIO_PORT_C,
-            .pin = GPIO_PIN_13,
-            .mode = GPIO_OUTPUT_2MHz,
-            .pin_config = GPIO_OUTPUT_PUSH_PULL
-        };
-        gpio_configure(configs);
-        led_configured = true;
-    }
-    if (state != RESULT_SUCCESS) {
-        while (1)
-        {
-            // LED is active low.
-            // Turning ON LED by setting 13th bit in upper 16 bits
-            GPIOx_config_regs(GPIOC_BASE)->BSRR = (1 << (GPIO_PIN_13 + 16));
-            delay(MS_TO_TICKS(GPIO_LED_ERROR_BLINK_MS));
-            // Turning OFF LED by setting 13th bit in lower 16 bits
-            GPIOx_config_regs(GPIOC_BASE)->BSRR = (1 << GPIO_PIN_13);
-        }
-    }
-    else {
-        GPIOx_config_regs(GPIOC_BASE)->BSRR = (1 << (GPIO_PIN_13 + 16));
-    }
-}
+

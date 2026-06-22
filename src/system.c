@@ -133,3 +133,17 @@ system_result_t APB2_enable_clock(apb2_enable_t enable) {
     return RESULT_SUCCESS;
 }
 
+system_result_t ADC_config_clock() {
+    // Enable adc clock peripheral
+    apb2_enable_t enable_clk = ADC1_CLOCK_ENABLE;
+    system_result_t result = APB2_enable_clock(enable_clk);
+    if (result != RESULT_SUCCESS) {
+        return RESULT_INVALID;
+    }
+
+    uint32_t reg_value = RCC_REGISTERS_ADDR->RCC_CFGR;
+    reg_value &= ~RCC_CFG_ADCPRE_MASK;
+    reg_value |= (ADC_SYSCLK_DIV_6 << RCC_CFG_ADCPRE_POS);      // 72 / 6 -> 12 MHz signal to adc
+
+    return RESULT_SUCCESS;
+}

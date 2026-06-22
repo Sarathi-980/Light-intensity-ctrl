@@ -42,20 +42,29 @@ typedef struct
 #define RCC_PLL_CLOCK_EN_MASK       (1 << 24)       // Enabling PLL using Clock control register
 
 // Rcc configuration register
-#define RCC_CFG_MCO_MASK            (0x7 << 24U)    // MCU clock output, outputs clock signal via pin PA8. used to verify the clock signal.
-#define RCC_CFG_USB_PRESCALSE_MASK  (1U << 22U)     // Used to generate 48 MHz USB clock signal. this must be valid before enable USB clock in APB1.
-#define RCC_CFG_PLL_MUL_MASK        (0xFU << 18U)   // bits [21:18]. The PLL multiplication factor only writable when PLL is disabled.
-#define RCC_CFG_PLLXPRE_MASK        (1U << 17U)     // Used to divide the PLL clock frequency by 2. PLL must be disabled before write.
-#define RCC_CFG_PLL_SRC_MASK        (1U << 16U)     // Which clock is selected as source of PLL.
-#define RCC_CFG_ADCPRE_MASK         (3U << 14U)     // Frequency of the clock to the ADC
-#define RCC_CFG_PPRE2_MASK          (7U << 11U)     // controls factor of the APB2 high speed clock
-#define RCC_CFG_PPRE1_MASK          (3U << 8U)      // controls factor of the APB1 low speed clock
-#define RCC_CFG_HPRE_MASK           (0xF << 4U)     // controls factor of the AHB high speed clock
-#define RCC_CFG_SWS_MASK            (3U << 2U)      // set by hardware to indicate which clock source is selected as system clock
-#define RCC_CFG_SW_MASK             (3U << 0U)      // selecting system clock source either HSI, HSE, PLL   
-
+#define RCC_CFG_MCO_POS             (24U)
+#define RCC_CFG_USB_PRE_POS         (22U)
 #define RCC_CFG_PLL_MUL_POS         (18U)
+#define RCC_CFG_PLLXTPRE_POS        (17U)
+#define RCC_CFG_PLL_SRC_POS         (16U)
+#define RCC_CFG_ADCPRE_POS          (14U)
+#define RCC_CFG_PPRE2_POS           (11U)
 #define RCC_CFG_PPRE1_POS           (8U)
+#define RCC_CFG_HPRE_POS            (4U)
+#define RCC_CFG_SWS_POS             (2U)
+#define RCC_CFG_SW_POS              (0U)
+
+#define RCC_CFG_MCO_MASK            (0x7U << RCC_CFG_MCO_POS)       // MCU clock output, outputs clock signal via pin PA8. used to verify the clock signal.
+#define RCC_CFG_USB_PRE_MASK        (1U << RCC_CFG_USB_PRE_POS)     // Used to generate 48 MHz USB clock signal. this must be valid before enable USB clock in APB1.
+#define RCC_CFG_PLL_MUL_MASK        (0xFU << RCC_CFG_PLL_MUL_POS)   // bits [21:18]. The PLL multiplication factor only writable when PLL is disabled.
+#define RCC_CFG_PLLXTPRE_MASK       (1U << RCC_CFG_PLLXTPRE_POS)    // Used to divide the PLL clock frequency by 2. PLL must be disabled before write.
+#define RCC_CFG_PLL_SRC_MASK        (1U << RCC_CFG_PLL_SRC_POS)     // Which clock is selected as source of PLL.
+#define RCC_CFG_ADCPRE_MASK         (0x3U << RCC_CFG_ADCPRE_POS)    // Frequency of the clock to the ADC
+#define RCC_CFG_PPRE2_MASK          (0x7U << RCC_CFG_PPRE2_POS)     // controls factor of the APB2 high speed clock
+#define RCC_CFG_PPRE1_MASK          (0x7U << RCC_CFG_PPRE1_POS)     // controls factor of the APB1 low speed clock
+#define RCC_CFG_HPRE_MASK           (0xFU << RCC_CFG_HPRE_POS)      // controls factor of the AHB high speed clock
+#define RCC_CFG_SWS_MASK            (0x3U << RCC_CFG_SWS_POS)       // set by hardware to indicate which clock source is selected as system clock
+#define RCC_CFG_SW_MASK             (0x3U << RCC_CFG_SW_POS)        // selecting system clock source either HSI, HSE, PLL
 
 // AHB peripheral clock enable register
 #define RCC_AHB_SDIO_EN_MASK        (1U << 10U)     // secure digital input output clock 
@@ -382,5 +391,67 @@ typedef enum {
     TIMx_DMA_BASE_DCR   = 18U,
     TIMx_DMA_BASE_DMAR  = 19U
 } TIMx_DCR_dma_base_addr_t;
+
+#define ADC1_BASE      (0x40012400U)
+typedef struct {
+    volatile uint32_t ADC_SR;
+    volatile uint32_t ADC_CR1;
+    volatile uint32_t ADC_CR2;
+    volatile uint32_t ADC_SMPR1;
+    volatile uint32_t ADC_SMPR2;
+    volatile uint32_t ADC_JOFR1;
+    volatile uint32_t ADC_JOFR2;
+    volatile uint32_t ADC_JOFR3;
+    volatile uint32_t ADC_JOFR4;
+    volatile uint32_t ADC_HTR;
+    volatile uint32_t ADC_LTR;
+    volatile uint32_t ADC_SQR1;
+    volatile uint32_t ADC_SQR2;
+    volatile uint32_t ADC_SQR3;
+    volatile uint32_t ADC_JSQR;
+    volatile uint32_t ADC_JDR1;
+    volatile uint32_t ADC_JDR2;
+    volatile uint32_t ADC_JDR3;
+    volatile uint32_t ADC_JDR4;
+    volatile uint32_t ADC_DR;
+} ADCx_registers_t;
+
+#define ADC1_REGISTERS              ((volatile ADCx_registers_t *)ADC1_BASE)
+
+#define ADC_SR_EOC_POS             (1U)
+#define ADC_SR_EOC_MASK            (1U << ADC_SR_EOC_POS)
+
+#define ADC_CR2_ADON_POS           (0U)
+#define ADC_CR2_ADON_MASK          (1U << ADC_CR2_ADON_POS)
+
+#define ADC_CR2_CONT_POS           (1U)
+#define ADC_CR2_CONT_MASK          (1U << ADC_CR2_CONT_POS)
+
+#define ADC_CR2_CAL_POS            (2U)
+#define ADC_CR2_CAL_MASK           (1U << ADC_CR2_CAL_POS)
+
+#define ADC_CR2_RSTCAL_POS         (3U)
+#define ADC_CR2_RSTCAL_MASK        (1U << ADC_CR2_RSTCAL_POS)
+
+#define ADC_CR2_ALIGN_POS          (11U)
+#define ADC_CR2_ALIGN_MASK         (1U << ADC_CR2_ALIGN_POS)
+
+#define ADC_CR2_EXTSEL_POS         (17U)
+#define ADC_CR2_EXTSEL_MASK        (0x7U << ADC_CR2_EXTSEL_POS)
+
+#define ADC_CR2_EXTTRIG_POS        (20U)
+#define ADC_CR2_EXTTRIG_MASK       (1U << ADC_CR2_EXTTRIG_POS)
+
+#define ADC_CR2_SWSTART_POS        (22U)
+#define ADC_CR2_SWSTART_MASK       (1U << ADC_CR2_SWSTART_POS)
+
+#define ADC_SQR1_L_POS             (20U)
+#define ADC_SQR1_L_MASK            (0xFU << ADC_SQR1_L_POS)
+
+#define ADC_SQR3_SQ1_POS           (0U)
+#define ADC_SQR3_SQ1_MASK          (0x1FU << ADC_SQR3_SQ1_POS)
+
+#define ADC_SMPR2_SMP_MASK(channel)         (0x7U << ((channel) * 3U))
+#define ADC_SMPR2_SMP_SET(sample, channel)  ((sample) << ((channel) * 3U))
 
 #endif

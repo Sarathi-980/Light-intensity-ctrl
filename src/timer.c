@@ -1,9 +1,5 @@
-#include "timer.h"
-#include "gpio.h"
-#include "system.h"
+#include "timer.h" 
 
-static bool is_dark = false;
-static bool adc_enabled = false; 
 extern uint32_t system_frequency;
 
 static const uint32_t timer_base_address_table[TIMER_COUNT] = {
@@ -23,53 +19,15 @@ static const uint32_t timer_base_address_table[TIMER_COUNT] = {
     [TIMER_TIM14] = TIMER14_BASE_ADDRESS,
 };
 
-typedef struct {
-    TIMERx_CCMR1_OC1M_t compare_mode;
-    uint32_t            compare_value;
-}   channel_output_req_t;
-
-typedef struct {
-    TIMx_IC1PSC_t  input_prescaler;
-    TIMx_IC1F_t    input_filter;
-}   channel_input_req_t;
-
-typedef union {
-    channel_output_req_t out;
-    channel_input_req_t inp;
-}   timer_cc_config_t;
-
-typedef struct {
-    // Output compare mode
-    uint32_t ocxm_pos;
-    // Output compare preload enable
-    uint32_t ocxpe_mask;
-    // Enable capture compare output
-    uint32_t ccxe_mask;
-}   channel_config_output_req_t;
-
-typedef struct {
-    uint32_t    icxpsc_pos;
-    uint32_t    icxf_pos;
-}   channel_config_input_req_t;
-
-typedef union {
-    channel_config_output_req_t output_cfg;
-    channel_config_input_req_t input_cfg;
-}   channel_io_req_t;
-  
-
-typedef struct {
-    volatile TIMx_registers_t   *config_timer;
-    timer_channel_t             config_channel;
-    TIMx_CCxS_t                 channel_direction;     // Channel capture compare direction select
-    timer_cc_config_t           capture_compare_cfg;
-}   channel_config_req_t;
-
-system_result_t timer_configure_channel(channel_config_req_t configs)
+static system_result_t timer_configure_channel(volatile TIMx_registers_t* timer, channel_config_req_t configs)
 {   
-    if (configs.config_timer == 0) {
+    if (!timer) {
         return RESULT_INVALID;
     }
+    if (configs.channel_direction > TIMER_CCx_CONFIG_INPUT_TRC) {
+        return RESULT_INVALID;
+    }
+
     // Capture compare selection position
     uint32_t ccxs_pos;
 
@@ -85,8 +43,8 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
     switch (configs.config_channel)
     {
         case TIMER_CHANNEL_1:
-            ccr_reg = &configs.config_timer->TIMx_CCR1;
-            ccmr_reg = &configs.config_timer->TIMx_CCMR1;
+            ccr_reg = &timer->TIMx_CCR1;
+            ccmr_reg = &timer->TIMx_CCMR1;
             ccxs_pos = TIMx_CCMR1_OUT_CC1S_POS;
             ccxe_pos = TIMx_CCER_CC1E_POS;
             if (configs.channel_direction == TIMER_CCx_CONFIG_OUTPUT) {
@@ -101,8 +59,8 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
             break;
         
         case TIMER_CHANNEL_2:
-            ccr_reg = &configs.config_timer->TIMx_CCR2;
-            ccmr_reg = &configs.config_timer->TIMx_CCMR1;
+            ccr_reg = &timer->TIMx_CCR2;
+            ccmr_reg = &timer->TIMx_CCMR1;
             ccxs_pos = TIMx_CCMR1_OUT_CC2S_POS;
             ccxe_pos = TIMx_CCER_CC2E_POS;
             if (configs.channel_direction == TIMER_CCx_CONFIG_OUTPUT) {
@@ -116,8 +74,8 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
             break;
 
         case TIMER_CHANNEL_3:
-            ccr_reg = &configs.config_timer->TIMx_CCR3;
-            ccmr_reg = &configs.config_timer->TIMx_CCMR2; 
+            ccr_reg = &timer->TIMx_CCR3;
+            ccmr_reg = &timer->TIMx_CCMR2; 
             ccxs_pos = TIMx_CCMR2_OUT_CC3S_POS;
             ccxe_pos = TIMx_CCER_CC3E_POS;
             if (configs.channel_direction == TIMER_CCx_CONFIG_OUTPUT) {
@@ -131,8 +89,8 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
             break;
         
         case TIMER_CHANNEL_4:
-            ccr_reg = &configs.config_timer->TIMx_CCR4;
-            ccmr_reg = &configs.config_timer->TIMx_CCMR2;
+            ccr_reg = &timer->TIMx_CCR4;
+            ccmr_reg = &timer->TIMx_CCMR2;
             ccxs_pos = TIMx_CCMR2_OUT_CC4S_POS;
             ccxe_pos = TIMx_CCER_CC4E_POS;
             if (configs.channel_direction == TIMER_CCx_CONFIG_OUTPUT) {
@@ -150,7 +108,7 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
     }
 
     // Disable channel before changing mode.
-    configs.config_timer->TIMx_CCER &= ~TIMx_CCER_CCxE_MASK(ccxe_pos);
+    timer->TIMx_CCER &= ~TIMx_CCER_CCxE_MASK(ccxe_pos);
 
     if (configs.channel_direction == TIMER_CCx_CONFIG_OUTPUT) {
         *ccr_reg = configs.capture_compare_cfg.out.compare_value;
@@ -179,7 +137,7 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
     *ccmr_reg = ccmr_val;
 
     // Enable selected output channel
-    configs.config_timer->TIMx_CCER |= TIMx_CCER_CCxE_MASK(ccxe_pos);
+    timer->TIMx_CCER |= TIMx_CCER_CCxE_MASK(ccxe_pos);
     return RESULT_SUCCESS;
 }
 
@@ -193,12 +151,32 @@ system_result_t timer_configure_channel(channel_config_req_t configs)
  * @param   channel     Timer channel need to be configure
  * @param   configs     gpio configuration need to be configure
  */
-system_result_t general_timer_init(timer_id_t id, timer_channel_t channel, gpio_config_req_t configs) 
+system_result_t general_timer_init(timer_id_t id, channel_config_req_t timer_configs, gpio_config_req_t gpio_configs) 
 {
-    if (id < TIMER_TIM2 || id > TIMER_TIM5) {
-        return RESULT_INVALID;
+    apb1_enable_t enable_clk;
+    switch (id)
+    {
+        case TIMER_TIM2:
+            enable_clk = TIMER2_CLOCK_ENABLE;
+            break;
+        case TIMER_TIM3:
+            enable_clk = TIMER3_CLOCK_ENABLE;
+            break;
+        case TIMER_TIM4:
+            enable_clk = TIMER4_CLOCK_ENABLE;
+            break;
+        case TIMER_TIM5:
+            enable_clk = TIMER5_CLOCK_ENABLE;
+            break;
+        default:
+            return RESULT_INVALID; 
     }
-    system_result_t result = gpio_configure(configs);
+    system_result_t result = APB1_enable_clock(enable_clk);
+    if (result != RESULT_SUCCESS) {
+        return result;
+    }
+
+    result = gpio_configure(gpio_configs);
     if (result != RESULT_SUCCESS) {
         return result;
     }
@@ -217,17 +195,15 @@ system_result_t general_timer_init(timer_id_t id, timer_channel_t channel, gpio_
     */
     timer->TIMx_PSC = (system_frequency / ONE_MHZ_FREQUENCY) - 1U;
     timer->TIMx_ARR = TIMER_INIT_AUTO_RELOAD_VAL;
-
-    channel_config_req_t channel_config_req = {
-        .config_timer = timer,
-        .config_channel = channel,
-        .config_type = CHANNEL_CONFIG_OUTPUT, 
-    };
-    timer_configure_channel()
     
     // Enable auto-reload enable
     timer->TIMx_CR1 |= TIMx_CR1_ARPE_MASK;
-    
+
+    result = timer_configure_channel(timer, timer_configs);
+    if (result != RESULT_SUCCESS) {
+        return result;
+    }
+
     // Update event to load registers
     timer->TIMx_EGR = TIMx_EGR_UG_MASK;
 
@@ -237,11 +213,45 @@ system_result_t general_timer_init(timer_id_t id, timer_channel_t channel, gpio_
     return RESULT_SUCCESS;
 }
 
-// system_result_t set_dutycycle_timer2(uint16_t dutycycle) {
-//     if (dutycycle > TIMER_AUTO_RELOAD_VAL) {
-//         dutycycle = TIMER_AUTO_RELOAD_VAL;
-//     }
+system_result_t timer_set_channel_duty(timer_id_t timer_id, timer_channel_t channel, uint32_t duty)
+{
+    if (timer_id >= TIMER_COUNT) {
+        return RESULT_INVALID;
+    }
 
-//     TIMER2_REGISTERS->TIMx_CCR1 = dutycycle;
-//     return RESULT_SUCCESS;
-// }
+    uint32_t timer_base = timer_base_address_table[timer_id];
+    if (timer_base == 0U) {
+        return RESULT_INVALID;
+    }
+
+    volatile TIMx_registers_t *timer = GENERAL_TIMER_REGISTERS(timer_base);
+
+    // Duty cycle should not be greater than Auto-reload register. because we need compare aginst it.
+    if (duty > timer->TIMx_ARR) {
+        duty = timer->TIMx_ARR;
+    }
+
+    switch (channel)
+    {
+        case TIMER_CHANNEL_1:
+            timer->TIMx_CCR1 = duty;
+            break;
+
+        case TIMER_CHANNEL_2:
+            timer->TIMx_CCR2 = duty;
+            break;
+
+        case TIMER_CHANNEL_3:
+            timer->TIMx_CCR3 = duty;
+            break;
+
+        case TIMER_CHANNEL_4:
+            timer->TIMx_CCR4 = duty;
+            break;
+
+        default:
+            return RESULT_INVALID;
+    }
+
+    return RESULT_SUCCESS;
+}

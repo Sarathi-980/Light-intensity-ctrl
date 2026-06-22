@@ -86,10 +86,9 @@ typedef struct
     gpio_port_t port;
     gpio_num_t pin;
     port_config_t pin_config;
-    gpio_mode_t mode
+    gpio_mode_t mode;
 }  gpio_config_req_t;
 
 
 system_result_t gpio_configure(gpio_config_req_t cfg_req);
-void led_indicate_state(system_result_t state);
 #endif

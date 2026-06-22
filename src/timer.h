@@ -2,6 +2,7 @@
 #define ADC_H
 
 #include "system.h"
+#include "gpio.h"
  
 #define VOLTAGE_DIV_R1              (10000U)   // 10K Resistor
 #define VOLTAGE_DIV_R2              (40000U)   // 40K Resistor
@@ -26,7 +27,7 @@ typedef enum {
     TIMER_TIM13,
     TIMER_TIM14,
     TIMER_COUNT
-} timer_id_t;
+}   timer_id_t;
 
 typedef enum {
     TIMER_CHANNEL_1 = 0,
@@ -48,9 +49,14 @@ typedef enum {
     PWM_MODE_2                  // In upcounting Channel 1 is inactive as long as TIMx_CNT < TIMx_CCR1, In downcounting channel 1 is active as long as TIMx_CNT > TIMx_CCR1
 }   TIMERx_CCMR1_OC1M_t;
 
+// Note: input mapping to TIx depends on channel, either direct or indirect
 typedef enum {
-    TIMER_CCx_CONFIG_OUTPUT,
-}   TIMx_CCxS_t;
+    TIMER_CCx_CONFIG_OUTPUT         = 0U,  // CCx channel is configured as output
+
+    TIMER_CCx_CONFIG_INPUT_DIRECT   = 1U,  //  mapped to its own TIx
+    TIMER_CCx_CONFIG_INPUT_INDIRECT = 2U,  // mapped to opposite TIx
+    TIMER_CCx_CONFIG_INPUT_TRC      = 3U   // mapped to TRC
+} TIMx_CCxS_t;
 
 typedef enum {
     TIMx_IC1PSC_NO_PRESCALER = 0,       // no prescaler, capture at each edge
@@ -97,5 +103,50 @@ typedef enum {
     COMPARE_OUT_DISABLE    =   0U,
     COMPARE_OUT_ENABLE     =   1U,
 }   TIMx_CCER_t;
+
+typedef struct {
+    TIMERx_CCMR1_OC1M_t compare_mode;
+    uint32_t            compare_value;
+}   channel_output_req_t;
+
+typedef struct {
+    TIMx_IC1PSC_t  input_prescaler;
+    TIMx_IC1F_t    input_filter;
+}   channel_input_req_t;
+
+typedef union {
+    channel_output_req_t out;
+    channel_input_req_t inp;
+}   timer_cc_config_t;
+
+typedef struct {
+    // Output compare mode
+    uint32_t ocxm_pos;
+    // Output compare preload enable
+    uint32_t ocxpe_mask;
+    // Enable capture compare output
+    uint32_t ccxe_mask;
+}   channel_config_output_req_t;
+
+typedef struct {
+    uint32_t    icxpsc_pos;
+    uint32_t    icxf_pos;
+}   channel_config_input_req_t;
+
+typedef union {
+    channel_config_output_req_t output_cfg;
+    channel_config_input_req_t input_cfg;
+}   channel_io_req_t;
+  
+
+typedef struct {
+    timer_channel_t             config_channel;
+    TIMx_CCxS_t                 channel_direction;     // Channel capture compare direction select
+    timer_cc_config_t           capture_compare_cfg;
+}   channel_config_req_t;
+
+system_result_t general_timer_init(timer_id_t id, channel_config_req_t timer_configs, gpio_config_req_t gpio_configs);
+system_result_t timer_set_channel_duty(timer_id_t timer_id, timer_channel_t channel, uint32_t duty);
+
 
 #endif
